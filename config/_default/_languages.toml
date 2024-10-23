@@ -3,4 +3,10 @@
 languageName = "English"
 languagedirection = "ltr"
 title = "Example Site"
+weight = 2
+
+[ko]  # 한국어 추가
+languageName = "한국어"
+languagedirection = "ltr"  # 왼쪽에서 오른쪽으로 읽는 언어
+title = "예시 사이트"
 weight = 1
