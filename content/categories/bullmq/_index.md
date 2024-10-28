@@ -1,6 +1,6 @@
 ---
-title: Example Category
-description: A description of this category
+title: BullMQ
+description: A description of BullMQ
 image:
 
 # Badge style
