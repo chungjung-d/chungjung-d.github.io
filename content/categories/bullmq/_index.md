@@ -1,7 +1,7 @@
 ---
 title: BullMQ
 description: A description of BullMQ
-image:
+image: cover.png
 
 # Badge style
 style:

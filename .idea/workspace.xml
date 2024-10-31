@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="93bfa41c-fd93-49b7-964a-d7badba9e1ec" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/chungjung-d.github.io.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events/QueueEvent Listening.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events/ReidsQueueEventInsight.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events/cover.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events/index.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-queue/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-queue/index.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/categories/bullmq/cover.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/content/categories/bullmq/_index.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/categories/bullmq/_index.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +32,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/chungjung/Desktop/project/blog/chungjung-d.github.io/content/post/analyzing-code-in-depth-bullmq-events",
+    "last_opened_file_path": "/Users/chungjung/Desktop/project/blog/chungjung-d.github.io/content/categories/bullmq",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -50,6 +43,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/content/categories/bullmq" />
       <recent name="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -75,7 +69,7 @@
       <workItem from="1729672571847" duration="4187000" />
       <workItem from="1730120289374" duration="1321000" />
       <workItem from="1730178846318" duration="604000" />
-      <workItem from="1730365751988" duration="1095000" />
+      <workItem from="1730365751988" duration="1406000" />
     </task>
     <servers />
   </component>
