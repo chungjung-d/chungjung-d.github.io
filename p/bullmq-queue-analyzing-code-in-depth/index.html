@@ -1,0 +1,495 @@
+<!doctype html><html lang=ko-kr dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content="BullMQ Queue 코드 뜯어보기"><title>[BullMQ] Queue 뜯어보기</title>
+<link rel=canonical href=https://chungjung-d.github.io/p/bullmq-queue-analyzing-code-in-depth/><link rel=stylesheet href=/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css><meta property='og:title' content="[BullMQ] Queue 뜯어보기"><meta property='og:description' content="BullMQ Queue 코드 뜯어보기"><meta property='og:url' content='https://chungjung-d.github.io/p/bullmq-queue-analyzing-code-in-depth/'><meta property='og:site_name' content='단은'><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Analyzing code in depth'><meta property='article:published_time' content='2024-10-28T00:00:00+00:00'><meta property='article:modified_time' content='2024-10-28T00:00:00+00:00'><meta property='og:image' content='https://chungjung-d.github.io/p/bullmq-queue-analyzing-code-in-depth/cover.png'><meta name=twitter:title content="[BullMQ] Queue 뜯어보기"><meta name=twitter:description content="BullMQ Queue 코드 뜯어보기"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://chungjung-d.github.io/p/bullmq-queue-analyzing-code-in-depth/cover.png'><link rel="shortcut icon" href=/favicon.png></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky"><button class="hamburger hamburger--spin" type=button id=toggle-menu aria-label="메뉴 여닫기">
+<span class=hamburger-box><span class=hamburger-inner></span></span></button><header><figure class=site-avatar><a href=/><img src=/img/avatar_hu897059592634026878.png width=300 height=300 class=site-logo loading=lazy alt=Avatar>
+</a><span class=emoji>🍥</span></figure><div class=site-meta><h1 class=site-name><a href=/>단은</a></h1><h2 class=site-description>Daneun Devlog</h2></div></header><ol class=menu-social><li><a href=https://github.com/chungjung-d target=_blank title=GitHub rel=me><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg></a></li><li><a href=https://twitter.com target=_blank title=Twitter rel=me><svg class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M22 4.01c-1 .49-1.98.689-3 .99-1.121-1.265-2.783-1.335-4.38-.737S11.977 6.323 12 8v1c-3.245.083-6.135-1.395-8-4 0 0-4.182 7.433 4 11-1.872 1.247-3.739 2.088-6 2 3.308 1.803 6.913 2.423 10.034 1.517 3.58-1.04 6.522-3.723 7.651-7.742a13.84 13.84.0 00.497-3.753C20.18 7.773 21.692 5.25 22 4.009z"/></svg></a></li></ol><ol class=menu id=main-menu><li><a href=/><svg class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="5 12 3 12 12 3 21 12 19 12"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
+<span>Home</span></a></li><li><a href=/archives/><svg class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><rect x="3" y="4" width="18" height="4" rx="2"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+<span>Archives</span></a></li><li><a href=/search/><svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+<span>Search</span></a></li><li><a href=/links/><svg class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M10 14a3.5 3.5.0 005 0l4-4a3.5 3.5.0 00-5-5l-.5.5"/><path d="M14 10a3.5 3.5.0 00-5 0l-4 4a3.5 3.5.0 005 5l.5-.5"/></svg>
+<span>Links</span></a></li><li class=menu-bottom-section><ol class=menu><li id=dark-mode-toggle><svg class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="8" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<svg class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="16" cy="12" r="2"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>
+<span>다크 모드</span></li></ol></li></ol></aside><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">목차</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#queue란>Queue란?</a></li><li><a href=#상속관계-살펴보기>상속관계 살펴보기</a></li><li><a href=#queuebase>QueueBase</a></li><li><a href=#queuegetters>QueueGetters</a></li><li><a href=#queue>Queue</a><ol><li><a href=#queuelistener>QueueListener</a></li><li><a href=#queue-1>Queue</a></li></ol></li><li><a href=#summary>Summary</a></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/p/bullmq-queue-analyzing-code-in-depth/><img src=/p/bullmq-queue-analyzing-code-in-depth/cover_hu14827047938849129846.png srcset="/p/bullmq-queue-analyzing-code-in-depth/cover_hu14827047938849129846.png 800w, /p/bullmq-queue-analyzing-code-in-depth/cover_hu12010230845768598072.png 1600w" width=800 height=275 loading=lazy alt="Featured image of post [BullMQ] Queue 뜯어보기"></a></div><div class=article-details><header class=article-category><a href=/categories/bullmq/ style=background-color:#2a9d8f;color:#fff>BullMQ</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/bullmq-queue-analyzing-code-in-depth/>[BullMQ] Queue 뜯어보기</a></h2><h3 class=article-subtitle>BullMQ Queue 코드 뜯어보기</h3></div><footer class=article-time><div><svg class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>10월 28, 2024</time></div><div><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>8 분 정도</time></div></footer></div></header><section class=article-content><h2 id=queue란>Queue란?</h2><p>BullMQ 에서 Queue는 <strong>A Queue is nothing more than a list of jobs waiting to be processes</strong> 라고 공식문서에서 설명한다. 그러나 완전히 그런 대기열 역할만 하는 것은 아니고, 대기열에 있는 현재 Job들의 상태나, 특정 Job이 등록되었을때 Job의 상태변화에 따라서 event를 제공하고 Scheduler를 이용해서 동일한 Job을 생성하는 등의 여러가지 역할을 수행하기는 한다.</p><p>이번 글에서는 공식문서에서는 나와있지 않은 BullMQ의 Queue Class가 내부적으로 어떻게 구현되었는지 간단하게 코드를 뜯어보면서 알아보려고 한다.</p><h2 id=상속관계-살펴보기>상속관계 살펴보기</h2><p>가정 먼저 해야할 일은 Queue Class의 상속관계를 살펴보는 것이다.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=kr>export</span> <span class=kr>class</span> <span class=nx>Queue</span><span class=o>&lt;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>DataType</span> <span class=o>=</span> <span class=kt>any</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>ResultType</span> <span class=o>=</span> <span class=kt>any</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>NameType</span> <span class=kr>extends</span> <span class=kt>string</span> <span class=o>=</span> <span class=kt>string</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;</span> <span class=kr>extends</span> <span class=nx>QueueGetters</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;</span> 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>class</span> <span class=nx>QueueGetters</span><span class=o>&lt;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>DataType</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>ResultType</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>NameType</span> <span class=kr>extends</span> <span class=kt>string</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=o>&gt;</span> <span class=kr>extends</span> <span class=nx>QueueBase</span> 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>class</span> <span class=nx>QueueBase</span> <span class=kr>extends</span> <span class=nx>EventEmitter</span> <span class=kr>implements</span> <span class=nx>MinimalQueue</span>
+</span></span></code></pre></td></tr></table></div></div><p>궁극적으로 Queue Class는 QueueBase에 의존한다는 것을 확인할 수 있다. 그리고 QueueBase Class가 상속하는 <code>EventEmitter</code> , <code>MinimalQueue</code> 는 다음과 같은 선언부를 가진다.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=kr>class</span> <span class=nx>EventEmitter</span> <span class=kr>extends</span> <span class=nx>NodeJS</span><span class=p>.</span><span class=nx>EventEmitter</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>export</span> <span class=kr>type</span> <span class=nx>MinimalQueue</span> <span class=o>=</span> <span class=nx>Pick</span><span class=o>&lt;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>QueueBase</span><span class=p>,</span> <span class=p>...</span> <span class=o>&gt;</span>
+</span></span></code></pre></td></tr></table></div></div><p><code>MinimalQueue</code> 는 타입을 조금 더 명확하게 사용하기 위해서 사용한 것이기 때문에 사실상 무시해도 좋다. 그렇다면 중요한건 <strong>NodeJS의 EventEmitter를 상속받는 사실만 기억해두면 좋을 것 같다.</strong></p><h2 id=queuebase>QueueBase</h2><p>지금까지의 상속관계를 대충 파악한 것으로 봤을 때 QueueBase가 Queue를 이루는 기본적인 역할을 한다는 사실을 어렴풋이 알 수 있다. 그러면 한번 QueueBase를 살펴보도록 하자.</p><p><strong>먼저 Constructor를 살펴보자</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl>  <span class=kr>constructor</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=kr>public</span> <span class=kr>readonly</span> <span class=nx>name</span>: <span class=kt>string</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=kr>public</span> <span class=nx>opts</span>: <span class=kt>QueueBaseOptions</span> <span class=o>=</span> <span class=p>{</span> <span class=nx>connection</span><span class=o>:</span> <span class=p>{}</span> <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Connection</span>: <span class=kt>typeof</span> <span class=nx>RedisConnection</span> <span class=o>=</span> <span class=nx>RedisConnection</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>    <span class=c1>// --- (1)
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kr>super</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>opts</span> <span class=o>=</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nx>prefix</span><span class=o>:</span> <span class=s1>&#39;bull&#39;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=p>...</span><span class=nx>opts</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=nx>name</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=k>throw</span> <span class=k>new</span> <span class=nb>Error</span><span class=p>(</span><span class=s1>&#39;Queue name must be provided&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>if</span> <span class=p>(</span><span class=nx>name</span><span class=p>.</span><span class=nx>includes</span><span class=p>(</span><span class=s1>&#39;:&#39;</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=k>throw</span> <span class=k>new</span> <span class=nb>Error</span><span class=p>(</span><span class=s1>&#39;Queue name cannot contain :&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>connection</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>Connection</span><span class=p>(</span>        
+</span></span><span class=line><span class=cl>      <span class=nx>opts</span><span class=p>.</span><span class=nx>connection</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nx>isRedisInstance</span><span class=p>(</span><span class=nx>opts</span><span class=p>.</span><span class=nx>connection</span><span class=p>),</span>
+</span></span><span class=line><span class=cl>      <span class=nx>opts</span><span class=p>.</span><span class=nx>blockingConnection</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>      <span class=nx>opts</span><span class=p>.</span><span class=nx>skipVersionCheck</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>// --- (2)  
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=k>this</span><span class=p>.</span><span class=nx>connection</span><span class=p>.</span><span class=nx>on</span><span class=p>(</span><span class=s1>&#39;error&#39;</span><span class=p>,</span> <span class=p>(</span><span class=nx>error</span>: <span class=kt>Error</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=k>this</span><span class=p>.</span><span class=nx>emit</span><span class=p>(</span><span class=s1>&#39;error&#39;</span><span class=p>,</span> <span class=nx>error</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>connection</span><span class=p>.</span><span class=nx>on</span><span class=p>(</span><span class=s1>&#39;close&#39;</span><span class=p>,</span> <span class=p>()</span> <span class=o>=&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=k>this</span><span class=p>.</span><span class=nx>closing</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>this</span><span class=p>.</span><span class=nx>emit</span><span class=p>(</span><span class=s1>&#39;ioredis:close&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>});</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=c1>// --- (3)
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=kr>const</span> <span class=nx>queueKeys</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>QueueKeys</span><span class=p>(</span><span class=nx>opts</span><span class=p>.</span><span class=nx>prefix</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>qualifiedName</span> <span class=o>=</span> <span class=nx>queueKeys</span><span class=p>.</span><span class=nx>getQueueQualifiedName</span><span class=p>(</span><span class=nx>name</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>keys</span> <span class=o>=</span> <span class=nx>queueKeys</span><span class=p>.</span><span class=nx>getKeys</span><span class=p>(</span><span class=nx>name</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>toKey</span> <span class=o>=</span> <span class=p>(</span><span class=kr>type</span><span class=o>:</span> <span class=kt>string</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=nx>queueKeys</span><span class=p>.</span><span class=nx>toKey</span><span class=p>(</span><span class=nx>name</span><span class=p>,</span> <span class=kr>type</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>    <span class=k>this</span><span class=p>.</span><span class=nx>setScripts</span><span class=p>();</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>(1)을 보면 필수 값으로 name 그리고 redis Connection 정보를 받아온다는 사실을 알 수 있다. 공식문서에서 Redis Connection은 ioredis 라이브러리에 의존하고 있다고 밝힌만큼, <strong>QueueBase는 ioredis로 생성한 connection정보를 객체의 property로 저장한다는 점을 알 수 있다.</strong></p><p>(2)는 아래에서 설명하고, 바로 (3)으로 넘어가보자. <code>QueueKeys</code> 와 <code>qualifiedName</code> 는 Queue의 상태에 대한 key들을 담고 있는 속성이다. 나머지도 이런식으로 기본적인 설정을 담당한다고 생각하면 된다.</p><p><strong>그 다음으로 봐야할 점은 emit 메서드이다.</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=nx>emit</span><span class=p>(</span><span class=nx>event</span>: <span class=kt>string</span> <span class=o>|</span> <span class=kt>symbol</span><span class=p>,</span> <span class=p>...</span><span class=nx>args</span>: <span class=kt>any</span><span class=p>[])</span><span class=o>:</span> <span class=kr>boolean</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>try</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=kr>super</span><span class=p>.</span><span class=nx>emit</span><span class=p>(</span><span class=nx>event</span><span class=p>,</span> <span class=p>...</span><span class=nx>args</span><span class=p>);</span>  <span class=c1>// --- (1) 일단 Eventemitter Emit 이용
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=p>}</span> <span class=k>catch</span> <span class=p>(</span><span class=nx>err</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=k>try</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=kr>super</span><span class=p>.</span><span class=nx>emit</span><span class=p>(</span><span class=s1>&#39;error&#39;</span><span class=p>,</span> <span class=nx>err</span><span class=p>);</span>  <span class=c1>// --- (2) 실패시 에러를 Eventemitter Emit 
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>}</span> <span class=k>catch</span> <span class=p>(</span><span class=nx>err</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=c1>// --- (3) 그래도 안되면 포기하고 그냥 콘솔에 에러 찍어버림
+</span></span></span><span class=line><span class=cl><span class=c1></span>      <span class=nx>console</span><span class=p>.</span><span class=nx>error</span><span class=p>(</span><span class=nx>err</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=kc>false</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>하는 역할은 매우 간단한데, emit을 호출하면 super.emit()을 호출한다. super객체는 NodeJS.EventEmitter기 때문에 nodeJS의 EventEmitter API를 이용한다고 보면 된다.</p><p>다시 QueueBase의 Constructor의 (2)로 돌아가면 이 emit 메서드가 Redis Connection을 한번 감싸는 용도로 사용되는 것을 확일할 수 있다.</p><p>그 외에도 <code>close()</code>, <code>disconnect()</code>, <code>checkConnectionError&lt;T>()</code> 등의 메서드들도 있지만 생략하겠다.</p><p>결과적으로 QueueBase객체는 “<strong>Redis 연결 관리, 상태를 조회할수 있는 이벤트를 관리 그리고 기본 설정값을 저장하는 객체</strong>” 로 생각하면 될 듯 하다.</p><h2 id=queuegetters>QueueGetters</h2><p>QueueBase가 기본적인 Redis Connection 및 그 외적으로 기본적으로 들어가야 하는 값들을 설정하는 객체였다면, Queue Getters는 본격적으로 Queue와 함께 Bullmq를 이루는 핵심요소인 Worker, Job, Listener 정보를 가져오는 역할을 담당한다고 볼 수 있다.</p><p>여기서 정보를 가져온다고 말한 이유는 BullMQ는 Queue 인스턴스 내부에 Worker나 Job의 정보를 저장하지 않기 때문이다. 다음은 QueueGetters에 있는 메서드들이다.</p><p><strong>Job Get Methods</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=nx>getJob</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>  <span class=nx>jobId</span>: <span class=kt>string</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=p>)</span><span class=o>:</span> <span class=nx>Promise</span><span class=p>&lt;</span><span class=nt>Job</span><span class=err>&lt;</span><span class=na>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;</span> <span class=o>|</span> <span class=kc>undefined</span><span class=o>&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=k>this</span><span class=p>.</span><span class=nx>Job</span><span class=p>.</span><span class=nx>fromId</span><span class=p>(</span><span class=k>this</span><span class=p>,</span> <span class=nx>jobId</span><span class=p>)</span> <span class=kr>as</span> <span class=nx>Promise</span><span class=o>&lt;</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Job</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=o>&gt;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl> 
+</span></span><span class=line><span class=cl><span class=kr>static</span> <span class=kr>async</span> <span class=nx>fromId</span><span class=p>&lt;</span><span class=nt>T</span> <span class=err>=</span> <span class=na>any</span><span class=err>,</span> <span class=na>R </span><span class=o>=</span> <span class=na>any</span><span class=err>,</span> <span class=na>N</span> <span class=na>extends</span> <span class=na>string </span><span class=o>=</span> <span class=na>string</span><span class=p>&gt;(</span>
+</span></span><span class=line><span class=cl>  <span class=nx>queue</span>: <span class=kt>MinimalQueue</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>jobId</span>: <span class=kt>string</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=p>)</span><span class=o>:</span> <span class=nx>Promise</span><span class=p>&lt;</span><span class=nt>Job</span><span class=err>&lt;</span><span class=na>T</span><span class=err>,</span> <span class=na>R</span><span class=err>,</span> <span class=na>N</span><span class=p>&gt;</span> <span class=o>|</span> <span class=kc>undefined</span><span class=o>&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=c1>// jobId can be undefined if moveJob returns undefined
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=nx>jobId</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kr>const</span> <span class=nx>client</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>queue</span><span class=p>.</span><span class=nx>client</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kr>const</span> <span class=nx>jobData</span> <span class=o>=</span> <span class=k>await</span> <span class=nx>client</span><span class=p>.</span><span class=nx>hgetall</span><span class=p>(</span><span class=nx>queue</span><span class=p>.</span><span class=nx>toKey</span><span class=p>(</span><span class=nx>jobId</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=nx>isEmpty</span><span class=p>(</span><span class=nx>jobData</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>      <span class=o>?</span> <span class=kc>undefined</span>
+</span></span><span class=line><span class=cl>      <span class=o>:</span> <span class=k>this</span><span class=p>.</span><span class=nx>fromJSON</span><span class=p>&lt;</span><span class=nt>T</span><span class=err>,</span> <span class=na>R</span><span class=err>,</span> <span class=na>N</span><span class=p>&gt;(</span>
+</span></span><span class=line><span class=cl>          <span class=nx>queue</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>          <span class=p>(&lt;</span><span class=nt>unknown</span><span class=p>&gt;</span><span class=nx>jobData</span><span class=p>)</span> <span class=kr>as</span> <span class=nx>JobJsonRaw</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>          <span class=nx>jobId</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>        <span class=p>);</span>
+</span></span><span class=line><span class=cl> <span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p><strong>Worker Get Methods</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl>  <span class=nx>getWorkers</span><span class=p>()</span><span class=o>:</span> <span class=nx>Promise</span><span class=o>&lt;</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=p>[</span><span class=nx>index</span>: <span class=kt>string</span><span class=p>]</span><span class=o>:</span> <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}[]</span>
+</span></span><span class=line><span class=cl>  <span class=o>&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kr>const</span> <span class=nx>unnamedWorkerClientName</span> <span class=o>=</span> <span class=sb>`</span><span class=si>${</span><span class=k>this</span><span class=p>.</span><span class=nx>clientName</span><span class=p>()</span><span class=si>}</span><span class=sb>`</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kr>const</span> <span class=nx>namedWorkerClientName</span> <span class=o>=</span> <span class=sb>`</span><span class=si>${</span><span class=k>this</span><span class=p>.</span><span class=nx>clientName</span><span class=p>()</span><span class=si>}</span><span class=sb>:w:`</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=kr>const</span> <span class=nx>matcher</span> <span class=o>=</span> <span class=p>(</span><span class=nx>name</span>: <span class=kt>string</span><span class=p>)</span> <span class=o>=&gt;</span>
+</span></span><span class=line><span class=cl>      <span class=nx>name</span> <span class=o>&amp;&amp;</span>
+</span></span><span class=line><span class=cl>      <span class=p>(</span><span class=nx>name</span> <span class=o>===</span> <span class=nx>unnamedWorkerClientName</span> <span class=o>||</span>
+</span></span><span class=line><span class=cl>        <span class=nx>name</span><span class=p>.</span><span class=nx>startsWith</span><span class=p>(</span><span class=nx>namedWorkerClientName</span><span class=p>));</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=k>this</span><span class=p>.</span><span class=nx>baseGetClients</span><span class=p>(</span><span class=nx>matcher</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl><span class=kr>private</span> <span class=kr>async</span> <span class=nx>baseGetClients</span><span class=p>(</span><span class=nx>matcher</span><span class=o>:</span> <span class=p>(</span><span class=nx>name</span>: <span class=kt>string</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=kr>boolean</span><span class=p>)</span><span class=o>:</span> <span class=nx>Promise</span><span class=o>&lt;</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=p>[</span><span class=nx>index</span>: <span class=kt>string</span><span class=p>]</span><span class=o>:</span> <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}[]</span>
+</span></span><span class=line><span class=cl>  <span class=o>&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kr>const</span> <span class=nx>client</span> <span class=o>=</span> <span class=k>await</span> <span class=k>this</span><span class=p>.</span><span class=nx>client</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>try</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=kr>const</span> <span class=nx>clients</span> <span class=o>=</span> <span class=p>(</span><span class=k>await</span> <span class=nx>client</span><span class=p>.</span><span class=nx>client</span><span class=p>(</span><span class=s1>&#39;LIST&#39;</span><span class=p>))</span> <span class=kr>as</span> <span class=kt>string</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=kr>const</span> <span class=nx>list</span> <span class=o>=</span> <span class=k>this</span><span class=p>.</span><span class=nx>parseClientList</span><span class=p>(</span><span class=nx>clients</span><span class=p>,</span> <span class=nx>matcher</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=nx>list</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span> <span class=k>catch</span> <span class=p>(</span><span class=nx>err</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=nx>clientCommandMessageReg</span><span class=p>.</span><span class=nx>test</span><span class=p>((&lt;</span><span class=nt>Error</span><span class=p>&gt;</span><span class=nx>err</span><span class=p>).</span><span class=nx>message</span><span class=p>))</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>throw</span> <span class=nx>err</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>      <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      <span class=k>return</span> <span class=p>[{</span> <span class=nx>name</span><span class=o>:</span> <span class=s1>&#39;GCP does not support client list&#39;</span> <span class=p>}];</span>
+</span></span><span class=line><span class=cl>    <span class=p>}</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>보면 알 수 있듯이, Job같은 경우 Job의 static method에서 Queue의 client를 이용해서 각 Queue에 속한 Jobs를 Redis에서 불러오고, Workers 같은 경우는 baseGetCleints method에서 worker정보를 redis에서 조회해서 불러오는 것으로 확인할 수 있다.</p><p>한 가지 알아두면 좋은점은 Worker를 Job처럼 관리하지 않는 이유는 Worker자체는 Queue처럼 Redis client를 직접 가지고 있는 객체라서 그렇다. 굳이 Worker에 redis client가 필요한 이유라면 그 둘은 독립적으로 작동하기 때문이라고 설명할 수 있을 것 같다. <strong>간단히 비유하면 Redis Pub/Sub에서 Queue가 Pub역할을 맡고, Wokrer가 Sub역할을 맡고 있다고 생각하면 된다.</strong></p><p>그 외에도 <code>getMetrics()</code> , <code>getQueueEvents()</code> 같이 Metric 정보다 QueueEvent 객체에 대한 정보를 불러올수 있는 method들이 이 객체에 존재한다. (getQueueEvents는 depricated 되었다.)</p><h2 id=queue>Queue</h2><p>이제 직접적인 Queue 구현체를 살펴보려고 한다. 우선 Queue 구현체를 살펴보기 전에 앞서서 먼저 같이 봐야할 객체들이 더 있다.</p><h3 id=queuelistener>QueueListener</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=kr>export</span> <span class=kr>interface</span> <span class=nx>QueueListener</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span> <span class=na>extends</span> <span class=na>string</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=kr>extends</span> <span class=nx>IoredisListener</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=nx>cleaned</span><span class=o>:</span> <span class=p>(</span><span class=nx>jobs</span>: <span class=kt>string</span><span class=p>[],</span> <span class=kr>type</span><span class=o>:</span> <span class=kt>string</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=k>void</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>error</span><span class=o>:</span> <span class=p>(</span><span class=nx>err</span>: <span class=kt>Error</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=k>void</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>paused</span><span class=o>:</span> <span class=p>()</span> <span class=o>=&gt;</span> <span class=k>void</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>progress</span><span class=o>:</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=nx>job</span>: <span class=kt>Job</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;,</span>
+</span></span><span class=line><span class=cl>    <span class=nx>progress</span>: <span class=kt>number</span> <span class=o>|</span> <span class=kt>object</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=p>)</span> <span class=o>=&gt;</span> <span class=k>void</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>removed</span><span class=o>:</span> <span class=p>(</span><span class=nx>job</span>: <span class=kt>Job</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;)</span> <span class=o>=&gt;</span> <span class=k>void</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>resumed</span><span class=o>:</span> <span class=p>()</span> <span class=o>=&gt;</span> <span class=k>void</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=nx>waiting</span><span class=o>:</span> <span class=p>(</span><span class=nx>job</span>: <span class=kt>Job</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;)</span> <span class=o>=&gt;</span> <span class=k>void</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>QueueListener interface는 Queue에게 허용된 이벤트 들의 목록을 정의한다. 예를 들어 Queue의 이벤트 관련 메서드 중 emit을 보자</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=nx>emit</span><span class=p>&lt;</span><span class=nt>U</span> <span class=na>extends</span> <span class=na>keyof</span> <span class=na>QueueListener</span><span class=err>&lt;</span><span class=na>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;</span><span class=o>&gt;</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>  <span class=nx>event</span>: <span class=kt>U</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=p>...</span><span class=nx>args</span>: <span class=kt>Parameters</span><span class=p>&lt;</span><span class=nt>QueueListener</span><span class=err>&lt;</span><span class=na>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;[</span><span class=nx>U</span><span class=p>]</span><span class=o>&gt;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span><span class=o>:</span> <span class=kr>boolean</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=kr>super</span><span class=p>.</span><span class=nx>emit</span><span class=p>(</span><span class=nx>event</span><span class=p>,</span> <span class=p>...</span><span class=nx>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>여기서 보면 제네릭으로 U를 받는데 U는 <code>QueueListener</code>의 key 중 하나이고, 그 key를 이용해서 args로 들어오는 함수의 타입을 검증하는 용도로 사용된다. 예시를 보여주자면 다음과 같다.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=kr>import</span> <span class=p>{</span> <span class=nx>Queue</span> <span class=p>}</span> <span class=kr>from</span> <span class=s1>&#39;bullmq&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kr>const</span> <span class=nx>myQueue</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>Queue</span><span class=p>(</span><span class=s1>&#39;Paint&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// waiting은 QueueListener의 key중 하나. 
+</span></span></span><span class=line><span class=cl><span class=c1>// 따라서 2번째 인자는 waiting: (job: Job&lt;DataType, ResultType, NameType&gt;) =&gt; void;
+</span></span></span><span class=line><span class=cl><span class=c1>// 함수의 시그니처를 따르게 된다. 
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=nx>myQueue</span><span class=p>.</span><span class=nx>on</span><span class=p>(</span><span class=s1>&#39;waiting&#39;</span><span class=p>,</span> <span class=p>(</span><span class=nx>job</span>: <span class=kt>Job</span><span class=p>)</span> <span class=o>=&gt;</span> <span class=p>{});</span>
+</span></span></code></pre></td></tr></table></div></div><h3 id=queue-1>Queue</h3><p>자 그러면 이제 진짜 Queue Class에 대해서 살펴보도록 하자. <strong>Queue 클래스에서는 대부분 직접 Redis에 Write 명령을 내리는 기능과, Queue내에서 실행된 다양한 작업에 의해 트리거 된 이벤트를 직접적으로 제공하는 역할을 하고 있다.</strong></p><p><strong>Constructor</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=kr>constructor</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>  <span class=nx>name</span>: <span class=kt>string</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>opts?</span>: <span class=kt>QueueOptions</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>Connection?</span>: <span class=kt>typeof</span> <span class=nx>RedisConnection</span><span class=p>,</span>
+</span></span><span class=line><span class=cl><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>super</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=nx>name</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=nx>blockingConnection</span>: <span class=kt>false</span><span class=p>,</span>   <span class=c1>// --- (1)
+</span></span></span><span class=line><span class=cl><span class=c1></span>      <span class=p>...</span><span class=nx>opts</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=p>},</span>
+</span></span><span class=line><span class=cl>    <span class=nx>Connection</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=p>);</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>this</span><span class=p>.</span><span class=nx>jobsOpts</span> <span class=o>=</span> <span class=nx>opts</span><span class=o>?</span><span class=p>.</span><span class=nx>defaultJobOptions</span> <span class=o>??</span> <span class=p>{};</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=k>this</span><span class=p>.</span><span class=nx>waitUntilReady</span><span class=p>()</span>   <span class=c1>// --- (2)
+</span></span></span><span class=line><span class=cl><span class=c1></span>    <span class=p>.</span><span class=nx>then</span><span class=p>(</span><span class=nx>client</span> <span class=o>=&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>      <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=k>this</span><span class=p>.</span><span class=nx>closing</span> <span class=o>&amp;&amp;</span> <span class=o>!</span><span class=nx>opts</span><span class=o>?</span><span class=p>.</span><span class=nx>skipMetasUpdate</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>        <span class=k>return</span> <span class=nx>client</span><span class=p>.</span><span class=nx>hmset</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=nx>keys</span><span class=p>.</span><span class=nx>meta</span><span class=p>,</span> <span class=k>this</span><span class=p>.</span><span class=nx>metaValues</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>      <span class=p>}</span>
+</span></span><span class=line><span class=cl>    <span class=p>})</span>
+</span></span><span class=line><span class=cl>    <span class=p>.</span><span class=k>catch</span><span class=p>(</span><span class=nx>err</span> <span class=o>=&gt;</span> <span class=p>{});</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p><strong>(1) <code>blockingConnection</code></strong></p><p>blocking Connection은 무조건 false로 되어 있다. 공식문서에서 설명되어 있듯이, Queue나 Worker같은 경우 기본적으로 독립적인 Connection을 가지는 것이 기본 옵션이나, Connection을 재활용 할 수 있다고 나와 있다. 이 기능을 위해서라도 blocking connection을 비활성화 시켜야 하기 때문에 false로 설정해 둔 듯 하다. Redis의 Blocking Connection에 대해서는 나중에 더 자세히 설명하도록 하고 이 글에서는 넘어가도록 하겠다.</p><p><strong>(2) <code>waitUntilReady</code></strong></p><p>waitUntilReady함수는 <code>Promise&lt;RedisClinet></code> 타입을 반환한다. 즉 Redis Client를 이용해서 redis에 queue에 필요한 메타데이터를 저장해서 초기화하는 역할을 한다.</p><p><strong>Event methods</strong></p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=nx>emit</span><span class=p>&lt;</span><span class=nt>U</span> <span class=na>extends</span> <span class=na>keyof</span> <span class=na>QueueListener</span><span class=err>&lt;</span><span class=na>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;</span><span class=o>&gt;</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>  <span class=nx>event</span>: <span class=kt>U</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=p>...</span><span class=nx>args</span>: <span class=kt>Parameters</span><span class=p>&lt;</span><span class=nt>QueueListener</span><span class=err>&lt;</span><span class=na>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;[</span><span class=nx>U</span><span class=p>]</span><span class=o>&gt;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span><span class=o>:</span> <span class=kr>boolean</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=kr>super</span><span class=p>.</span><span class=nx>emit</span><span class=p>(</span><span class=nx>event</span><span class=p>,</span> <span class=p>...</span><span class=nx>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>off</span><span class=p>&lt;</span><span class=nt>U</span> <span class=na>extends</span> <span class=na>keyof</span> <span class=na>QueueListener</span><span class=err>&lt;</span><span class=na>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;</span><span class=o>&gt;</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>  <span class=nx>eventName</span>: <span class=kt>U</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>listener</span>: <span class=kt>QueueListener</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;[</span><span class=nx>U</span><span class=p>],</span>
+</span></span><span class=line><span class=cl><span class=p>)</span><span class=o>:</span> <span class=k>this</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>super</span><span class=p>.</span><span class=nx>off</span><span class=p>(</span><span class=nx>eventName</span><span class=p>,</span> <span class=nx>listener</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=k>this</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>on</span><span class=p>&lt;</span><span class=nt>U</span> <span class=na>extends</span> <span class=na>keyof</span> <span class=na>QueueListener</span><span class=err>&lt;</span><span class=na>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;</span><span class=o>&gt;</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>  <span class=nx>event</span>: <span class=kt>U</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>listener</span>: <span class=kt>QueueListener</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;[</span><span class=nx>U</span><span class=p>],</span>
+</span></span><span class=line><span class=cl><span class=p>)</span><span class=o>:</span> <span class=k>this</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>super</span><span class=p>.</span><span class=nx>on</span><span class=p>(</span><span class=nx>event</span><span class=p>,</span> <span class=nx>listener</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=k>this</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=nx>once</span><span class=p>&lt;</span><span class=nt>U</span> <span class=na>extends</span> <span class=na>keyof</span> <span class=na>QueueListener</span><span class=err>&lt;</span><span class=na>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;</span><span class=o>&gt;</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>  <span class=nx>event</span>: <span class=kt>U</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>  <span class=nx>listener</span>: <span class=kt>QueueListener</span><span class=p>&lt;</span><span class=nt>DataType</span><span class=err>,</span> <span class=na>ResultType</span><span class=err>,</span> <span class=na>NameType</span><span class=p>&gt;[</span><span class=nx>U</span><span class=p>],</span>
+</span></span><span class=line><span class=cl><span class=p>)</span><span class=o>:</span> <span class=k>this</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>super</span><span class=p>.</span><span class=nx>once</span><span class=p>(</span><span class=nx>event</span><span class=p>,</span> <span class=nx>listener</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=k>this</span><span class=p>;</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>각 메서드들은 NodeJS.EventEmitter의 메서드들을 오버라이딩 한 함수들이다. 위에서 말했던 것 처럼 U 타입을 제네릭 인자로 받고, 리스너 함수를 검증해서 사용하는데 쓴다.</p><p>그 외에 대부분은 Redis에 저장된 스크립트를 실행시키는 코드들이 대부분이다.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=c1>// Queue Class의 메서드 
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl><span class=kr>async</span> <span class=nx>pause</span><span class=p>()</span><span class=o>:</span> <span class=nx>Promise</span><span class=p>&lt;</span><span class=nt>void</span><span class=p>&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=k>await</span> <span class=k>this</span><span class=p>.</span><span class=nx>scripts</span><span class=p>.</span><span class=nx>pause</span><span class=p>(</span><span class=kc>true</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>this</span><span class=p>.</span><span class=nx>emit</span><span class=p>(</span><span class=s1>&#39;paused&#39;</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>  
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// Script Class의 메서드 
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kr>async</span> <span class=nx>pause</span><span class=p>(</span><span class=nx>pause</span>: <span class=kt>boolean</span><span class=p>)</span><span class=o>:</span> <span class=nx>Promise</span><span class=p>&lt;</span><span class=nt>void</span><span class=p>&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kr>const</span> <span class=nx>client</span> <span class=o>=</span> <span class=k>await</span> <span class=k>this</span><span class=p>.</span><span class=nx>queue</span><span class=p>.</span><span class=nx>client</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kr>const</span> <span class=nx>args</span> <span class=o>=</span> <span class=k>this</span><span class=p>.</span><span class=nx>pauseArgs</span><span class=p>(</span><span class=nx>pause</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=k>return</span> <span class=k>this</span><span class=p>.</span><span class=nx>execCommand</span><span class=p>(</span><span class=nx>client</span><span class=p>,</span> <span class=s1>&#39;pause&#39;</span><span class=p>,</span> <span class=nx>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>Queue에서 redis에 관련된 작업을 하는것은 크게 3개의 단계로 나뉜다.</p><ol><li>script를 실행하기 전에 필요한 작업 (Job 객체를 생성 및 등록 같은 작업)</li><li>script 객체에서 해당된 메서드를 호출 및 실행</li><li>이벤트 발생 등 후처리 작업</li></ol><p>이 중에서 2번을 좀 더 자세히 보면 script class에 정의된 메서드들은 전부 <code>execCommand()</code> 메서드를 이용해서 전부 redis에 명령을 내린다. 그렇다면 <code>execCommand()</code> 에 대해서 좀 더 자세히 살펴보자</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span><span class=lnt>8
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl>  <span class=kr>public</span> <span class=nx>execCommand</span><span class=p>(</span>
+</span></span><span class=line><span class=cl>    <span class=nx>client</span>: <span class=kt>RedisClient</span> <span class=o>|</span> <span class=nx>ChainableCommander</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nx>commandName</span>: <span class=kt>string</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>    <span class=nx>args</span>: <span class=kt>any</span><span class=p>[],</span>
+</span></span><span class=line><span class=cl>  <span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kr>const</span> <span class=nx>commandNameWithVersion</span> <span class=o>=</span> <span class=sb>`</span><span class=si>${</span><span class=nx>commandName</span><span class=si>}</span><span class=sb>:</span><span class=si>${</span><span class=k>this</span><span class=p>.</span><span class=nx>version</span><span class=si>}</span><span class=sb>`</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=k>return</span> <span class=p>(&lt;</span><span class=nt>any</span><span class=p>&gt;</span><span class=nx>client</span><span class=p>)[</span><span class=nx>commandNameWithVersion</span><span class=p>](</span><span class=nx>args</span><span class=p>);</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span></code></pre></td></tr></table></div></div><p>실제로 이 함수는 아래와 같은 함수가 되어 실행된다.</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-ts data-lang=ts><span class=line><span class=cl><span class=kr>const</span> <span class=nx>result</span> <span class=o>=</span> <span class=nx>client</span><span class=p>[</span><span class=s1>&#39;set:v1&#39;</span><span class=p>](</span><span class=nx>args</span><span class=p>);</span>
+</span></span></code></pre></td></tr></table></div></div><p>그렇다면 이 <code>'set:v1'</code> 같은 명령어는 어디서 오는가에 대해서 의문을 가질 수 있다. 소스 코드의 <code>src/commands</code> 경로에 보면 Lua script들이 모여있는 것을 확인할 수 있다. 이 Lua Script들이 redis에 등록되고, 해당 redis client는 redis에 등록되어있던 Lua script를 호출하는 방식으로 실행된다.</p><h2 id=summary>Summary</h2><p>정리하자면, QueueBase는 Connection 정보를 설정하고 제공한다.</p><p>QueueGetters는 각종 Queue와 연관이 있는 Worker, Jobs, Metrics에 대한 정보 조회를 제공하는 역할을 담당한다.</p><p>Queue는 그 외에 Queue 또는 Queue Job의 상태 변화에 따른 정보를 Event를 통해 제공하고, redis client를 통해서 직접 redis에 write하는 명령을 담당한다.</p></section><footer class=article-footer><section class=article-tags><a href=/tags/analyzing-code-in-depth/>Analyzing Code in Depth</a></section><section class=article-copyright><svg class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section><section class=article-lastmod><svg class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<span>마지막 수정: 10월 28, 2024 00:00 UTC</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>관련 글</h2><div class=related-content><div class="flex article-list--tile"><article class=has-image><a href=/p/bullmq-event-analyzing-code-in-depth/><div class=article-image><img src=/p/bullmq-event-analyzing-code-in-depth/cover.c6b47a1359f4fbf4525fc7f9147d59b7_hu13128281567246758287.png width=250 height=150 loading=lazy alt="Featured image of post [BullMQ] Event 뜯어보기" data-key=bullmq-event-analyzing-code-in-depth data-hash="md5-xrR6E1n0+/RSX8f5FH1Ztw=="></div><div class=article-details><h2 class=article-title>[BullMQ] Event 뜯어보기</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//Chungjung Blog.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2024 단은</section><section class=powerby><a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a>로 만듦<br><a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a>의 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.29.0>Stack</a></b> 테마 사용 중</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
