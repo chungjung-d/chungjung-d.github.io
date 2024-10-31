@@ -2,7 +2,7 @@
 title: "[BullMQ] Queue 뜯어보기"
 description: BullMQ Queue 코드 뜯어보기
 slug: bullmq-queue-analyzing-code-in-depth
-date: 2024-10-03 00:00:00+0000
+date: 2024-10-28 00:00:00+0000
 image: cover.png
 categories:
     - BullMQ

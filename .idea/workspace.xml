@@ -5,10 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="93bfa41c-fd93-49b7-964a-d7badba9e1ec" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/content/categories/bullmq/_index.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-queue/index.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/chungjung-d.github.io.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events/QueueEvent Listening.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events/ReidsQueueEventInsight.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events/cover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events/index.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content/categories/example-category/_index.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-queue/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-queue/index.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,20 +34,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/chungjung/Desktop/project/blog/chungjung-d.github.io&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "/Users/chungjung/Desktop/project/blog/chungjung-d.github.io/content/post/analyzing-code-in-depth-bullmq-events",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-events" />
+      <recent name="$PROJECT_DIR$/content/post/analyzing-code-in-depth-bullmq-queue" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-WS-242.23726.96" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -52,7 +73,9 @@
       <option name="presentableId" value="Default" />
       <updated>1729672570596</updated>
       <workItem from="1729672571847" duration="4187000" />
-      <workItem from="1730120289374" duration="1037000" />
+      <workItem from="1730120289374" duration="1321000" />
+      <workItem from="1730178846318" duration="604000" />
+      <workItem from="1730365751988" duration="1095000" />
     </task>
     <servers />
   </component>
